@@ -7,8 +7,10 @@ import { ethers } from "ethers";
 import PROXY_ABI from "./ABI/Proxy.json";
 
 function App() {
+  const [sendChain, setSendChain] = useState(0);
   const [sendSymbol, setSendSymbol] = useState("");
   const [receiveSymbol, setReceiveSymbol] = useState("");
+  const [receiveChain, setReceiveChain] = useState(0);
   const [receiver, setReceiver] = useState("");
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -19,7 +21,7 @@ function App() {
   const provider1 = new ethers.providers.JsonRpcProvider('https://ethereum-goerli.publicnode.com')
 
   const web3 = new Web3(provider);
-  const PROXY_ADDRESS = "0x4DB6515cAdf8b73179B6a05B15628E5d6fEd5a54";
+  const PROXY_ADDRESS = "0x840e7A19c6BE8B717aFf31dCC456b8aA9f4fAbc7";
   const OWNER_PK =
     "0x2b0fd22dd1534c3ef238757ad64ecc45c45ff2e3b0755ef6d1aa7da98bfa87da";
   const account = web3.eth.accounts.privateKeyToAccount(OWNER_PK);
@@ -33,16 +35,19 @@ function App() {
     {
       name: "Ethereum",
       symbol: "ETH",
+      id: '1',
       logo: "https://tbot-8uyz.vercel.app/images/1.svg",
     },
     {
       name: "BNB Smart Chain",
       symbol: "BNB",
+      id: '56',
       logo: "https://tbot-8uyz.vercel.app/images/56.svg",
     },
     {
       name: "Arbitrum",
       symbol: "ARB",
+      id: '42161',
       logo: "https://cryptologos.cc/logos/arbitrum-arb-logo.png?v=026",
     },
   ];
@@ -106,7 +111,9 @@ function App() {
           const tx = proxyContract.methods.createMixer(
             receiver,
             generateRateAndTime().divRate,
-            generateRateAndTime().delayTime
+            generateRateAndTime().delayTime,
+            sendChain,
+            receiveChain
           );
           // const gasEstimate = Number(
           //   await proxyContract.methods
@@ -116,7 +123,7 @@ function App() {
           //       generateRateAndTime().delayTime
           //     )
           //     .estimateGas({ from: account.address })
-          // ); 
+          // );
           const createData = tx.encodeABI();
           const signedTx = await web3.eth.accounts.signTransaction(
             {
@@ -140,31 +147,30 @@ function App() {
         proxyContractEvent.on(
           "Created",
           async (newMixer, recipient, divRate, delayTime) => {
-            console.log({newMixer});
             await axios.get(
               `https://api.telegram.org/bot6262508546:AAHTPKzJ5kkTwxeLumhwDLPAwxMxG_WeMCc/sendMessage`,
               {
                 params: {
                   chat_id: window.Telegram.WebApp.initDataUnsafe.user.id,
                   text: `✨ Start Your Transfer
-                    🔄 You're Sending: ${sendSymbol}
-                    🔄 You'll Receive: ${receiveSymbol}
-    
-                    🚀 Send ${sendSymbol} (min. 0.1, max. 50) Here 👇👇👇
-                    ${newMixer}
-                      
-                    ⏳ ${receiveSymbol} Estimated Arrival:
-                    By ${formatDate(new Date().getTime() + 30 * 60000)}
-                      
-                    😎 Recipient:
-                    ${receiver}
-                      
-                    🛑 IMPORTANT:
-                    1. Send your funds within the next 15 minutes.
-                    2. Store your recovery key securely. It's your lifeline with support:
-                    eyJpdiI6InRMb2h3YkFjTWN0eFNNZUFHMnRXQWc9PSIsInZhbHVlIjoiSzhRV255WkZjbEpjbmpFTi9wREcwdz09IiwibWFjIjoiNDFmOTI5NDkzYjUwOWMzNDYwMTQzM2Q1ZTExZjI4MmVhODVhNTNjNzhlNzM5ODRjNjYxMGI1YzFmYjVkMWQ5YyIsInRhZyI6IiJ9
-    
-                    Happy Cross Mixing 🕵️‍♂️🚀🎉🔐`,
+🔄 You're Sending: ${sendSymbol}
+🔄 You'll Receive: ${receiveSymbol}
+
+🚀 Send ${sendSymbol} (min. 0.1, max. 50) Here 👇👇👇
+${newMixer}
+  
+⏳ ${receiveSymbol} Estimated Arrival:
+By ${formatDate(new Date().getTime() + 30 * 60000)}
+  
+😎 Recipient:
+${receiver}
+  
+🛑 IMPORTANT:
+1. Send your funds within the next 15 minutes.
+2. Store your recovery key securely. It's your lifeline with support:
+eyJpdiI6InRMb2h3YkFjTWN0eFNNZUFHMnRXQWc9PSIsInZhbHVlIjoiSzhRV255WkZjbEpjbmpFTi9wREcwdz09IiwibWFjIjoiNDFmOTI5NDkzYjUwOWMzNDYwMTQzM2Q1ZTExZjI4MmVhODVhNTNjNzhlNzM5ODRjNjYxMGI1YzFmYjVkMWQ5YyIsInRhZyI6IiJ9
+
+Happy Cross Mixing 🕵️‍♂️🚀🎉🔐`,
                 },
               }
             );
@@ -187,7 +193,10 @@ function App() {
         <ul
           className="network_list"
           onChange={(event) => {
-            setSendSymbol(event.target.value);
+            const symbol = event.target.value;
+            const network = networks.find(network => network.symbol === symbol);
+            setSendSymbol(symbol);
+            setSendChain(network.id);
           }}
         >
           {networks.map((network, index) => (
@@ -214,7 +223,10 @@ function App() {
         <ul
           className="network_list"
           onChange={(event) => {
-            setReceiveSymbol(event.target.value);
+            const symbol = event.target.value;
+            const network = networks.find(network => network.symbol === symbol);
+            setReceiveSymbol(symbol);
+            setReceiveChain(network.id);
           }}
         >
           {networks.map((network, index) => (

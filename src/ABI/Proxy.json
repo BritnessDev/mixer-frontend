@@ -25,6 +25,18 @@
         "internalType": "uint256",
         "name": "delayTime",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "srcChainId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "dscChainId",
+        "type": "uint256"
       }
     ],
     "name": "Created",
@@ -64,6 +76,16 @@
       {
         "internalType": "uint256",
         "name": "_delayTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_srcChainId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_dscChainId",
         "type": "uint256"
       }
     ],
