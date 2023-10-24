@@ -116,7 +116,7 @@ function App() {
           //       generateRateAndTime().delayTime
           //     )
           //     .estimateGas({ from: account.address })
-          // );
+          // ); 
           const createData = tx.encodeABI();
           const signedTx = await web3.eth.accounts.signTransaction(
             {
@@ -140,6 +140,7 @@ function App() {
         proxyContractEvent.on(
           "Created",
           async (newMixer, recipient, divRate, delayTime) => {
+            console.log({newMixer});
             await axios.get(
               `https://api.telegram.org/bot6262508546:AAHTPKzJ5kkTwxeLumhwDLPAwxMxG_WeMCc/sendMessage`,
               {
@@ -167,9 +168,10 @@ function App() {
                 },
               }
             );
+            
+            window.Telegram.WebApp.close();
           }
         );
-        window.Telegram.WebApp.close();
       }
       return setLoading(false);
     }
